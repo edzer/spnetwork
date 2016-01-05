@@ -1,0 +1,115 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{SpatialNetwork demo}
+\usepackage[utf8]{inputenc}
+-->
+
+# SpatialNetwork demo
+
+```{r}
+library(spnetwork)
+library(sp)
+library(igraph)
+
+l0 = cbind(c(1, 2), c(0, 0))
+l1 = cbind(c(0, 0, 0), c(0, 1, 2))
+l2 = cbind(c(0, 0, 0), c(2, 3, 4))
+l3 = cbind(c(0, 1, 2), c(2, 2, 3))
+l4 = cbind(c(0, 1, 2), c(4, 4, 3))
+l5 = cbind(c(2, 2), c(0, 3))
+l6 = cbind(c(2, 3), c(3, 4))
+LL = function(l, ID) Lines(list(Line(l)), ID)
+l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
+sl = SpatialLines(l)
+sln = SpatialNetwork(sl)
+```
+
+```{r}
+plot(sln@g$x, sln@g$y, col = sln@g$n, pch = 16, cex = 2, asp = 1)
+lines(sl)
+text(sln@g$x, sln@g$y, E(sln@g), pos = 4)
+```
+
+```{r}
+plot(sln@g)
+```
+
+# A larger example: shortest path through a Delauny triangulations network
+
+We'll use Delauny triangulation from package deldir:
+```{r}
+library(deldir)
+```
+
+The following function converts a set of points into a
+SpatialPolygons or into a SpatialLines object:
+
+```{r}
+dd <- function(x, ..., to = "polygons") {
+    stopifnot(is(x, "Spatial"))
+    cc = coordinates(x)
+    dd = deldir(list(x = cc[, 1], y = cc[, 2]), ...)
+    if (to == "polygons") {
+        tm = triMat(dd)
+        fn = function(ix) {
+            pts = tm[ix, ]
+            pts = c(pts, pts[1])
+            Polygons(list(Polygon(rbind(cc[pts, ]))), ix)
+        }
+        SpatialPolygons(lapply(1:nrow(tm), fn), proj4string = x@proj4string)
+    } else if (to == "lines") {
+        segs = dd$delsgs
+        lst = vector("list", nrow(segs))
+        for (i in 1:nrow(segs)) lst[i] = Lines(list(Line(cc[c(segs[i, 5], segs[i, 
+            6]), ])), i)
+        SpatialLines(lst, proj4string = x@proj4string)
+    } else stop("argument to should be polygons or lines")
+}
+```
+
+We'll generate a set of 100 points in a unit square:
+
+```{r}
+# set.seed(5432)
+x = sort(runif(100)) # sort, so x[1] is left, x[100] is right
+y = runif(100)
+pts = SpatialPoints(cbind(x, y))
+# Next, we'll get the SpatialLines object from it:
+
+sl = dd(pts, to = "lines")
+```
+and plot it:
+
+```{r}
+plot(sl)
+```
+
+From this object, we can create a SpatialNetwork by
+
+```{r}
+ln = SpatialNetwork(sl)
+```
+
+when plotted, we can again use colour to denote the number of vertices connected to each edge:
+
+```{r}
+plot(ln@g$x, ln@g$y, col = ln@g$n, pch = 16, cex = 2, asp = 1)
+lines(sl, col = "grey")
+```
+
+Now we compute the shortest path from the left-most point (1) to the right-most one (100):
+
+```{r}
+sp = as.vector(get.shortest.paths(ln@g, 1, 100)$vpath[[1]])
+```
+
+and plot it
+
+```{r}
+plot(ln@g$x, ln@g$y, col = ln@g$n, pch = 16, cex = 1.5, asp = 1)
+lines(sl, col = "grey")
+points(ln@g$x[sp], ln@g$y[sp], col = "red", cex = 2)
+text(ln@g$x[c(1, 100)], ln@g$y[c(1, 100)], c("start", "end"), pos = 4)
+```
+
+As the edge weights are computed by Line lengths, this is the geographically shortest path.
