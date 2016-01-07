@@ -4,11 +4,18 @@ Description: Classes and methods for spatial networks.
 Version: 0.0-0
 Date: 2016-01-05
 Authors@R: c(person("Edzer", "Pebesma", role = c("cre", "aut"), email = "edzer.pebesma@uni-muenster.de"))
-Depends: methods
-Imports: sp (>= 1.0-17), igraph
-Suggests: trajectories, knitr, deldir
+Depends:
+    methods
+Imports:
+    sp (>= 1.0-17),
+    igraph
+Suggests:
+    trajectories,
+    knitr,
+    deldir
 License: GPL-2
 URL: http://github.com/edzer/spnetworks
 VignetteBuilder: knitr
-Collate: classes.R
-RoxygenNote: 5.0.0
+Collate:
+    classes.R
+RoxygenNote: 5.0.1
