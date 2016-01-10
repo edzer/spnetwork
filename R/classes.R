@@ -1,4 +1,5 @@
 #' @import methods sp igraph
+#' @importFrom stats weights
 
 #  @exportClass igraph
 setClass("igraph") # S4
@@ -139,8 +140,10 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
 #' of the graph network are updated with the values of the corresponding
 #' variables.
 #'
-#' @usage weights(x)
+#' @usage weights(object, ...)
 #' @usage weigths(x) <- value
+#' @param object SpatialNetwork to use
+#' @param ... ignored
 #' @param x SpatialNetwork to use
 #' @param weightfield The name of the variable to set/use.
 #' @param value Either the name of the variable to use as the weight field or
@@ -148,11 +151,26 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
 #' passed to the replacement function.
 #' @name weightfield
 #' @aliases weights weights<- weights,SpatialNetwork-method weights<-,SpatialNetwork,character-method, weights<-,SpatialNetwork,vector-method, weights<-,SpatialNetwork,character,vector-method
+#' @examples
+#' library(sp) # Lines, SpatialLines
+#' l0 = cbind(c(1, 2), c(0, 0))
+#' l1 = cbind(c(0, 0, 0), c(0, 1, 2))
+#' l2 = cbind(c(0, 0, 0), c(2, 3, 4))
+#' l3 = cbind(c(0, 1, 2), c(2, 2, 3))
+#' l4 = cbind(c(0, 1, 2), c(4, 4, 3))
+#' l5 = cbind(c(2, 2), c(0, 3))
+#' l6 = cbind(c(2, 3), c(3, 4))
+#' LL = function(l, ID) Lines(list(Line(l)), ID)
+#' l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
+#' sln = SpatialNetwork(SpatialLines(l))
+#' weights(sln)
+#' weights(sln) = 2 * sln$length
+#' weights(sln) = "length"
 NULL
 
-#' @export
-setGeneric("weights",
-           function(x) standardGeneric("weights"))
+##' @export
+#setGeneric("weights",
+#           function(x) standardGeneric("weights"))
 
 #' @export
 setGeneric("weights<-",
@@ -163,15 +181,17 @@ setGeneric("weights<-",
            function(x, weightfield, value) standardGeneric("weights<-"))
 
 #' @rdname weightfield
-setMethod("weights", signature(x = "SpatialNetwork"), definition = function(x) {
-    message(paste0("Weightfield = ", x@weightfield))
-    x@data[,x@weightfield]
-})
+#' @export weights
+#' @export
+weights.SpatialNetwork = function(object, ...) {
+    message(paste0("Weightfield = ", object@weightfield))
+    object@data[, object@weightfield]
+}
 
 #' @rdname weightfield
 setReplaceMethod("weights", signature(x = "SpatialNetwork", value = "character"), 
                  definition = function(x, value) {
-                     if (all(value) %in% colnames(x)) {
+                     if (value %in% names(x)) {
                          x@weightfield <- value
                          E(x@g)$weight <- x@data[,value]
                          x

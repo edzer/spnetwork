@@ -5,6 +5,7 @@
 \alias{weightfield}
 \alias{weights}
 \alias{weights,SpatialNetwork-method}
+\alias{weights.SpatialNetwork}
 \alias{weights<-}
 \alias{weights<-,SpatialNetwork,ANY,character-method}
 \alias{weights<-,SpatialNetwork,ANY,vector-method}
@@ -13,9 +14,9 @@
 \alias{weights<-,SpatialNetwork,vector-method,}
 \title{Get or set weight field in SpatialNetwork}
 \usage{
-weights(x)
+weights(object, ...)
 
-\S4method{weights}{SpatialNetwork}(x)
+\method{weights}{SpatialNetwork}(object, ...)
 
 \S4method{weights}{SpatialNetwork,ANY,character}(x) <- value
 
@@ -24,6 +25,10 @@ weights(x)
 \S4method{weights}{SpatialNetwork,character,vector}(x, weightfield) <- value
 }
 \arguments{
+\item{object}{SpatialNetwork to use}
+
+\item{...}{ignored}
+
 \item{x}{SpatialNetwork to use}
 
 \item{value}{Either the name of the variable to use as the weight field or
@@ -41,5 +46,21 @@ These functions manipulate the value of weightfield in a
 SpatialNetwork. When changing the value of weightfield, the weights
 of the graph network are updated with the values of the corresponding
 variables.
+}
+\examples{
+library(sp) # Lines, SpatialLines
+l0 = cbind(c(1, 2), c(0, 0))
+l1 = cbind(c(0, 0, 0), c(0, 1, 2))
+l2 = cbind(c(0, 0, 0), c(2, 3, 4))
+l3 = cbind(c(0, 1, 2), c(2, 2, 3))
+l4 = cbind(c(0, 1, 2), c(4, 4, 3))
+l5 = cbind(c(2, 2), c(0, 3))
+l6 = cbind(c(2, 3), c(3, 4))
+LL = function(l, ID) Lines(list(Line(l)), ID)
+l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
+sln = SpatialNetwork(SpatialLines(l))
+weights(sln)
+weights(sln) = 2 * sln$length
+weights(sln) = "length"
 }
 
