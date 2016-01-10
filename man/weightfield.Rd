@@ -62,5 +62,6 @@ sln = SpatialNetwork(SpatialLines(l))
 weights(sln)
 weights(sln) = 2 * sln$length
 weights(sln) = "length"
+weights(sln, "randomweights") = runif(nrow(sln))
 }
 
