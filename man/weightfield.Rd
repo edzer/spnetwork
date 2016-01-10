@@ -3,12 +3,18 @@
 \docType{methods}
 \name{weightfield}
 \alias{weightfield}
+\alias{weights}
 \alias{weights,SpatialNetwork-method}
+\alias{weights<-}
 \alias{weights<-,SpatialNetwork,ANY,character-method}
 \alias{weights<-,SpatialNetwork,ANY,vector-method}
 \alias{weights<-,SpatialNetwork,character,vector-method}
+\alias{weights<-,SpatialNetwork,character-method,}
+\alias{weights<-,SpatialNetwork,vector-method,}
 \title{Get or set weight field in SpatialNetwork}
 \usage{
+weights(x)
+
 \S4method{weights}{SpatialNetwork}(x)
 
 \S4method{weights}{SpatialNetwork,ANY,character}(x) <- value

@@ -10,7 +10,7 @@
 \alias{[[<-,SpatialNetwork,ANY,missing-method}
 \title{The SpatialNetwork class and constructor function}
 \usage{
-SpatialNetwork(sl, g, nb, weights)
+SpatialNetwork(sl, g, nb, weights, weightfield)
 }
 \arguments{
 \item{sl}{object of one of (a sublasses of) \link{SpatialLines}}
@@ -20,6 +20,8 @@ SpatialNetwork(sl, g, nb, weights)
 \item{nb}{neighbourhood list}
 
 \item{weights}{weight for edges (defaults to length of linestring)}
+
+\item{weightfield}{character; name of the attribute field of \code{sl} that will be used as weights}
 }
 \value{
 object of class \link{SpatialNetwork-class}
@@ -39,8 +41,10 @@ note
    \item{\code{bbox}}{matrix, holding bounding box}
    \item{\code{proj4string}}{object of class \link[sp]{CRS-class}}
    \item{\code{lines}}{list}
+   \item{\code{data}}{data.frame, holding attributes associated with lines}
    \item{\code{g}}{object of a subclass of \link[igraph]{igraph}}
    \item{\code{nb}}{neighbourhood list}
+   \item{\code{weightfield}}{character; describing the weight field used}
  }
 }
 \examples{

@@ -14,15 +14,18 @@ setClass("igraph") # S4
 #'    \item{\code{bbox}}{matrix, holding bounding box}
 #'    \item{\code{proj4string}}{object of class \link[sp]{CRS-class}}
 #'    \item{\code{lines}}{list}
+#'    \item{\code{data}}{data.frame, holding attributes associated with lines}
 #'    \item{\code{g}}{object of a subclass of \link[igraph]{igraph}}
 #'    \item{\code{nb}}{neighbourhood list}
+#'    \item{\code{weightfield}}{character; describing the weight field used}
 #'  }
 #'
-#' @usage SpatialNetwork(sl, g, nb, weights)
+#' @usage SpatialNetwork(sl, g, nb, weights, weightfield)
 #' @param sl object of one of (a sublasses of) \link{SpatialLines}
 #' @param g object of class \link{igraph} 
 #' @param nb neighbourhood list
 #' @param weights weight for edges (defaults to length of linestring)
+#' @param weightfield character; name of the attribute field of \code{sl} that will be used as weights
 #' @return object of class \link{SpatialNetwork-class}
 
 #' @name SpatialNetwork-class
@@ -107,10 +110,8 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
     	        weightfield = 'weight'
     	    }
 	        sl@data[, weightfield] <- weights
-    	}
-    	else {
+    	} else
     	    weightfield = 'length'
-    	}
         E(g)$weight = sl@data[, weightfield]
         
     	# create list with vertices, starting/stopping for each edge?  add for
@@ -120,9 +121,8 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
     	sl$end = pts2[, 2]
 	}
 	if (!missing(weights)) {
-	    if (missing(weightfield)) {
+	    if (missing(weightfield))
 	        weightfield = 'weight'
-	    }
         sl@data[, weightfield] <- weights
     	E(g)$weight = weights
 	}
@@ -132,18 +132,22 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
 #' Get or set weight field in SpatialNetwork
 #'
 #' Get or set value of weight field in SpatialNetwork
+#'
 #' @section Details:
 #' These functions manipulate the value of weightfield in a
 #' SpatialNetwork. When changing the value of weightfield, the weights
 #' of the graph network are updated with the values of the corresponding
 #' variables.
 #'
+#' @usage weights(x)
+#' @usage weigths(x) <- value
 #' @param x SpatialNetwork to use
 #' @param weightfield The name of the variable to set/use.
 #' @param value Either the name of the variable to use as the weight field or
 #' a vector containing the weights to use if \code{varname} is
 #' passed to the replacement function.
 #' @name weightfield
+#' @aliases weights weights<- weights,SpatialNetwork-method weights<-,SpatialNetwork,character-method, weights<-,SpatialNetwork,vector-method, weights<-,SpatialNetwork,character,vector-method
 NULL
 
 #' @export
@@ -171,11 +175,8 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", value = "character")
                          x@weightfield <- value
                          E(x@g)$weight <- x@data[,value]
                          x
-                     }
-                     else {
-                         error(paste0("No field of name ",value," - weights not updated"))
-                         x
-                     }
+                     } else
+                         stop(paste0("No field of name ",value," - weights not updated"))
                  })
 
 #' @rdname weightfield
