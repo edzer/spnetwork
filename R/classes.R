@@ -166,6 +166,7 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
 #' weights(sln)
 #' weights(sln) = 2 * sln$length
 #' weights(sln) = "length"
+#' weights(sln, "randomweights") = runif(nrow(sln))
 NULL
 
 ##' @export
