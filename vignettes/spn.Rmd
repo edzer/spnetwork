@@ -100,7 +100,9 @@ lines(sl, col = "grey")
 Now we compute the shortest path from the left-most point (1) to the right-most one (100):
 
 ```{r}
-sp = as.vector(get.shortest.paths(ln@g, 1, 100)$vpath[[1]])
+path = get.shortest.paths(ln@g, 1, 100, output = "both")
+sp = as.vector(path$vpath[[1]])
+ids = as_ids(path$epath[[1]])
 ```
 
 and plot it
@@ -110,6 +112,7 @@ plot(ln@g$x, ln@g$y, col = ln@g$n, pch = 16, cex = 1.5, asp = 1)
 lines(sl, col = "grey")
 points(ln@g$x[sp], ln@g$y[sp], col = "red", cex = 2)
 text(ln@g$x[c(1, 100)], ln@g$y[c(1, 100)], c("start", "end"), pos = 4)
+lines(ln[ids,], col = 'red', lwd = 2)
 ```
 
 As the edge weights are computed by Line lengths, this is the geographically shortest path.
