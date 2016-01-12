@@ -71,13 +71,14 @@ We'll generate a set of 100 points in a unit square:
 
 ```{r}
 # set.seed(5432)
-x = sort(runif(100)) # sort, so x[1] is left, x[100] is right
+x = sort(runif(100))
 y = runif(100)
 pts = SpatialPoints(cbind(x, y))
 # Next, we'll get the SpatialLines object from it:
 
 sl = dd(pts, to = "lines")
 ```
+
 and plot it:
 
 ```{r}
@@ -115,4 +116,4 @@ text(ln@g$x[c(1, 100)], ln@g$y[c(1, 100)], c("start", "end"), pos = 4)
 lines(ln[ids,], col = 'red', lwd = 2)
 ```
 
-As the edge weights are computed by Line lengths, this is the geographically shortest path.
+As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end.
