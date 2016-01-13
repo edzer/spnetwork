@@ -5,7 +5,6 @@
 \alias{$,SpatialNetwork-method}
 \alias{SpatialNetwork}
 \alias{SpatialNetwork-class}
-\alias{[,SpatialNetwork-method}
 \alias{[[,SpatialNetwork,ANY,missing-method}
 \alias{[[<-,SpatialNetwork,ANY,missing-method}
 \title{The SpatialNetwork class and constructor function}

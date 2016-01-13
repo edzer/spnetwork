@@ -88,20 +88,20 @@ plot(sl)
 From this object, we can create a SpatialNetwork by
 
 ```{r}
-ln = SpatialNetwork(sl)
+net = SpatialNetwork(sl)
 ```
 
 when plotted, we can again use colour to denote the number of vertices connected to each edge:
 
 ```{r}
-plot(ln@g$x, ln@g$y, col = ln@g$n, pch = 16, cex = 2, asp = 1)
-lines(sl, col = "grey")
+plot(net)
+points(net)
 ```
 
 Now we compute the shortest path from the left-most point (1) to the right-most one (100):
 
 ```{r}
-path = get.shortest.paths(ln@g, 1, 100, output = "both")
+path = get.shortest.paths(net@g, 1, 100, output = "both")
 sp = as.vector(path$vpath[[1]])
 ids = as_ids(path$epath[[1]])
 ```
@@ -109,11 +109,11 @@ ids = as_ids(path$epath[[1]])
 and plot it
 
 ```{r}
-plot(ln@g$x, ln@g$y, col = ln@g$n, pch = 16, cex = 1.5, asp = 1)
-lines(sl, col = "grey")
-points(ln@g$x[sp], ln@g$y[sp], col = "red", cex = 2)
-text(ln@g$x[c(1, 100)], ln@g$y[c(1, 100)], c("start", "end"), pos = 4)
-lines(ln[ids,], col = 'red', lwd = 2)
+plot(net, col = 'grey')
+sel = net[ids,]
+lines(sel, col = 'red', lwd = 2)
+points(sel)
+text(net@g$x[c(1, 100)], net@g$y[c(1, 100)], c("start", "end"), pos = 4)
 ```
 
-As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end.
+As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end. 

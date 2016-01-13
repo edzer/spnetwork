@@ -31,7 +31,7 @@ setClass("igraph") # S4
 
 #' @name SpatialNetwork-class
 #' @rdname SpatialNetwork-class
-#' @aliases SpatialNetwork SpatialNetwork-class [,SpatialNetwork-method [[,SpatialNetwork,ANY,missing-method [[<-,SpatialNetwork,ANY,missing-method $,SpatialNetwork-method
+#' @aliases SpatialNetwork SpatialNetwork-class [[,SpatialNetwork,ANY,missing-method [[<-,SpatialNetwork,ANY,missing-method $,SpatialNetwork-method
 #' @exportClass SpatialNetwork
 #' @author Edzer Pebesma
 #' @note note
@@ -98,8 +98,9 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
     	# map to 1:length(unique(pts))
     	pts0 = match(pts, unique(pts))
     	node = rep(1:length(sl), each = 2)
-    	nb = lapply(1:length(unique(pts)), function(x) node[which(pts0 == x)])
     	g = graph(pts0, directed = FALSE)  # edges
+    	# nb = lapply(1:length(unique(pts)), function(x) node[which(pts0 == x)])
+		nb = lapply(as.list(incident_edges(g, V(g))), as.numeric) # meaning, we can drop it as slot
     	nodes = s[unique(pts), ]
     	g$x = nodes[, 1]  # x-coordinate vertex
     	g$y = nodes[, 2]  # y-coordinate vertex
@@ -218,3 +219,37 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
                      E(x@g)$weight <- x@data[,weightfield]
                      x
                  })
+
+
+#' extract method for testClass
+#'
+#' @name [
+#' @aliases [,SpatialNetwork-method
+#' @docType methods
+#' @param x object of class SpatialNetwork
+#' @param i numeric; features to select
+#' @param j numeric or character; attributes to select
+#' @param ... ignored
+#' @param drop logical; ignored
+#' @rdname SpatialNetwork-methods
+setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
+	# select i: edge_ids
+	sl = as(x, "SpatialLinesDataFrame")
+	sl = sl[i, j, ..., drop = FALSE]
+	V(x@g)$sel = 1:length(V(x@g)) # identify
+	g = subgraph.edges(x@g, i)
+	sel = V(g)$sel
+	g$x = g$x[sel]
+	g$y = g$y[sel]
+    g$n = g$n[sel]
+	nb = lapply(as.list(incident_edges(g, V(g))), as.numeric)
+	new("SpatialNetwork", sl, g = g, nb = nb, weightfield = x@weightfield)
+})
+
+#' @param col color
+#' @param cex symbol size
+#' @rdname SpatialNetwork-methods
+#' @export
+points.SpatialNetwork = function(x, ..., col = "red", cex = 2) {
+	points(x@g$x, x@g$y, col = col, cex = cex, ...)
+}
