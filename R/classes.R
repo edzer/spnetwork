@@ -17,14 +17,12 @@ setClass("igraph") # S4
 #'    \item{\code{lines}}{list}
 #'    \item{\code{data}}{data.frame, holding attributes associated with lines}
 #'    \item{\code{g}}{object of a subclass of \link[igraph]{igraph}}
-#'    \item{\code{nb}}{neighbourhood list}
 #'    \item{\code{weightfield}}{character; describing the weight field used}
 #'  }
 #'
-#' @usage SpatialNetwork(sl, g, nb, weights, weightfield)
+#' @usage SpatialNetwork(sl, g, weights, weightfield)
 #' @param sl object of one of (a sublasses of) \link{SpatialLines}
 #' @param g object of class \link{igraph} 
-#' @param nb neighbourhood list
 #' @param weights weight for edges (defaults to length of linestring)
 #' @param weightfield character; name of the attribute field of \code{sl} that will be used as weights
 #' @return object of class \link{SpatialNetwork-class}
@@ -56,27 +54,25 @@ setClass("igraph") # S4
 #' plot(sln@g)
 setClass("SpatialNetwork",
 	contains = "SpatialLinesDataFrame", 
-	slots = c(g = "igraph", nb = "list", weightfield = "character"),
+	slots = c(g = "igraph", weightfield = "character"),
     validity = function(object) {
 		# print("Entering validation: SpatialNetwork")
 		if (any(sapply(object@lines, function(x) length(x@Lines)) != 1))
 			stop("all Lines objects need to have a single Line") 
     	if (length(object@lines) != length(E(object@g)))
 			stop("edges do not match number line segments") 
-    	if (length(object@nb) != length(V(object@g)))
-			stop("vertices do not match length of neighbourhood list") 
 		return(TRUE)
 	}
 )
 
 #' @export
-SpatialNetwork = function(sl, g, nb, weights, weightfield) {
+SpatialNetwork = function(sl, g, weights, weightfield) {
     stopifnot(is(sl, "SpatialLines"))
     if (!is(sl, "SpatialLinesDataFrame")) 
         sl = new("SpatialLinesDataFrame", sl, data = data.frame(id = 1:length(sl)))
     if (!all(sapply(sl@lines, function(x) length(x@Lines)) == 1)) 
         stop("SpatialLines is not simple: each Lines element should have only a single Line")
-	if (missing(g) || missing(nb)) { # sort out from sl
+	if (missing(g)) { # sort out from sl
     	startEndPoints = function(x) {
         	firstLast = function(L) {
             	cc = coordinates(L)[[1]]
@@ -100,7 +96,7 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
     	node = rep(1:length(sl), each = 2)
     	g = graph(pts0, directed = FALSE)  # edges
     	# nb = lapply(1:length(unique(pts)), function(x) node[which(pts0 == x)])
-		nb = lapply(as.list(incident_edges(g, V(g))), as.numeric) # meaning, we can drop it as slot
+		# nb = lapply(as.list(incident_edges(g, V(g))), as.numeric) # dropped as slot
     	nodes = s[unique(pts), ]
     	g$x = nodes[, 1]  # x-coordinate vertex
     	g$y = nodes[, 2]  # y-coordinate vertex
@@ -128,7 +124,7 @@ SpatialNetwork = function(sl, g, nb, weights, weightfield) {
         sl@data[, weightfield] <- weights
     	E(g)$weight = weights
 	}
-    new("SpatialNetwork", sl, g = g, nb = nb, weightfield = weightfield)
+    new("SpatialNetwork", sl, g = g, weightfield = weightfield)
 }
 
 #' Get or set weight field in SpatialNetwork
@@ -234,16 +230,15 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
 #' @rdname SpatialNetwork-methods
 setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
 	# select i: edge_ids
-	sl = as(x, "SpatialLinesDataFrame")
-	sl = sl[i, j, ..., drop = FALSE]
+	sl = as(x, "SpatialLinesDataFrame")[i, j, ..., drop = FALSE]
 	V(x@g)$sel = 1:length(V(x@g)) # identify
 	g = subgraph.edges(x@g, i)
 	sel = V(g)$sel
 	g$x = g$x[sel]
 	g$y = g$y[sel]
     g$n = g$n[sel]
-	nb = lapply(as.list(incident_edges(g, V(g))), as.numeric)
-	new("SpatialNetwork", sl, g = g, nb = nb, weightfield = x@weightfield)
+	# nb = lapply(as.list(incident_edges(g, V(g))), as.numeric)
+	new("SpatialNetwork", sl, g = g, weightfield = x@weightfield)
 })
 
 #' @param col color

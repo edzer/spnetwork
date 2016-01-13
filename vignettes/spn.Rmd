@@ -67,22 +67,20 @@ dd <- function(x, ..., to = "polygons") {
 }
 ```
 
-We'll generate a set of 100 points in a unit square:
+We'll generate a set of 
 
 ```{r}
-# set.seed(5432)
-x = sort(runif(100))
-y = runif(100)
-pts = SpatialPoints(cbind(x, y))
-# Next, we'll get the SpatialLines object from it:
-
-sl = dd(pts, to = "lines")
+n = 1000
 ```
 
-and plot it:
+points in a unit square:
 
 ```{r}
-plot(sl)
+set.seed(5432)
+x = sort(runif(n))
+y = runif(n)
+pts = SpatialPoints(cbind(x, y))
+sl = dd(pts, to = "lines")
 ```
 
 From this object, we can create a SpatialNetwork by
@@ -101,7 +99,7 @@ points(net)
 Now we compute the shortest path from the left-most point (1) to the right-most one (100):
 
 ```{r}
-path = get.shortest.paths(net@g, 1, 100, output = "both")
+path = get.shortest.paths(net@g, 1, n, output = "both")
 sp = as.vector(path$vpath[[1]])
 ids = as_ids(path$epath[[1]])
 ```
@@ -113,7 +111,7 @@ plot(net, col = 'grey')
 sel = net[ids,]
 lines(sel, col = 'red', lwd = 2)
 points(sel)
-text(net@g$x[c(1, 100)], net@g$y[c(1, 100)], c("start", "end"), pos = 4)
+text(net@g$x[c(1, n)], net@g$y[c(1, n)], c("begin", "end"), pos = 4)
 ```
 
 As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end. 
