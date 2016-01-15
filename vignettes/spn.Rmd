@@ -115,3 +115,7 @@ text(net@g$x[c(1, n)], net@g$y[c(1, n)], c("begin", "end"), pos = 4)
 ```
 
 As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end. 
+
+```{r}
+summary(sel)
+```
