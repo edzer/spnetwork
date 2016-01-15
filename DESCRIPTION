@@ -12,6 +12,7 @@ Imports:
 Suggests:
     trajectories,
     knitr,
+	rgdal,
     deldir
 License: GPL-2
 URL: http://github.com/edzer/spnetworks

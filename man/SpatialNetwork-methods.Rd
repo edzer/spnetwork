@@ -6,6 +6,8 @@
 \alias{[,SpatialNetwork-method}
 \alias{points.SpatialNetwork}
 \alias{print.summary.SpatialNetwork}
+\alias{spTransform}
+\alias{spTransform,SpatialNetwork,ANY-method}
 \alias{summary}
 \alias{summary,SpatialNetwork-method}
 \alias{summary.SpatialNetwork}
@@ -18,6 +20,8 @@
 summary.SpatialNetwork(object, ...)
 
 \method{print}{summary.SpatialNetwork}(x, ...)
+
+\S4method{spTransform}{SpatialNetwork,ANY}(x, CRSobj, ...)
 }
 \arguments{
 \item{x}{object of class SpatialNetwork}
@@ -35,10 +39,14 @@ summary.SpatialNetwork(object, ...)
 \item{cex}{symbol size}
 
 \item{object}{object of class SpatialNetwork}
+
+\item{CRSobj}{object of class \link[sp]{CRS}}
 }
 \description{
 extract method for SpatialNetwork
 
 summary method for SpatialNetwork
+
+spTransform method for SpatialNetwork
 }
 
