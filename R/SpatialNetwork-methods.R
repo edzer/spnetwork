@@ -102,13 +102,7 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
 setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
 	# select i: edge_ids
 	sl = as(x, "SpatialLinesDataFrame")[i, j, ..., drop = FALSE]
-	V(x@g)$getXsel = 1:length(V(x@g)) # identify
 	g = subgraph.edges(x@g, i)
-	sel = V(g)$getXsel
-	g$x = g$x[sel]
-	g$y = g$y[sel]
-    g$n = g$n[sel]
-	# nb = lapply(as.list(incident_edges(g, V(g))), as.numeric)
 	new("SpatialNetwork", sl, g = g, weightfield = x@weightfield)
 })
 
@@ -117,7 +111,7 @@ setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop =
 #' @rdname SpatialNetwork-methods
 #' @export
 points.SpatialNetwork = function(x, ..., col = "red", cex = 2) {
-	points(x@g$x, x@g$y, col = col, cex = cex, ...)
+	points(V(x@g)$x, V(x@g)$y, col = col, cex = cex, ...)
 }
 
 if (!isGeneric("summary"))
@@ -141,6 +135,7 @@ summary.SpatialNetwork = function(object, ...) {
 		obj[["data"]] = summary(object@data)
 	obj$edges = length(object)
 	obj$nodes = length(V(object@g))
+	obj$weightfield = object@weightfield
 	obj$g = object@g
     class(obj) = "summary.SpatialNetwork"
     obj
@@ -159,6 +154,7 @@ print.summary.SpatialNetwork = function(x, ...) {
     if (nchar(pst) < 40) cat(paste("proj4string : [", pst, "]\n", sep=""))
     else cat(paste("proj4string :\n[", pst, "]\n", sep=""))
 	cat(paste("# edges:", x$edges, "# nodes/vertices:", x$nodes, "\n"))
+	cat(paste("# weightfield:", x$weightfield, "\n"))
 	cat("Graph summary:\n")
 	summary(x$g) # directly prints
     if (!is.null(x$data)) {

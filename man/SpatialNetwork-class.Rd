@@ -56,10 +56,10 @@ LL = function(l, ID) Lines(list(Line(l)), ID)
 l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
 sl = SpatialLines(l)
 sln = SpatialNetwork(sl)
-plot(sln@g$x, sln@g$y, col = sln@g$n, pch = 16, cex = 2, asp = 1)
-lines(sl)
+plot(sln)
+points(sln)
 library(igraph) # E
-text(sln@g$x, sln@g$y, E(sln@g), pos = 4)
+text(V(sln@g)$x, V(sln@g)$y, E(sln@g), pos = 4)
 plot(sln@g)
 }
 \author{

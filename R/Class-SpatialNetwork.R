@@ -47,10 +47,10 @@ setClass("igraph") # S4
 #' l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
 #' sl = SpatialLines(l)
 #' sln = SpatialNetwork(sl)
-#' plot(sln@g$x, sln@g$y, col = sln@g$n, pch = 16, cex = 2, asp = 1)
-#' lines(sl)
+#' plot(sln)
+#' points(sln)
 #' library(igraph) # E
-#' text(sln@g$x, sln@g$y, E(sln@g), pos = 4)
+#' text(V(sln@g)$x, V(sln@g)$y, E(sln@g), pos = 4)
 #' plot(sln@g)
 setClass("SpatialNetwork",
 	contains = "SpatialLinesDataFrame", 
@@ -98,9 +98,9 @@ SpatialNetwork = function(sl, g, weights, weightfield) {
     	# nb = lapply(1:length(unique(pts)), function(x) node[which(pts0 == x)])
 		# nb = lapply(as.list(incident_edges(g, V(g))), as.numeric) # dropped as slot
     	nodes = s[unique(pts), ]
-    	g$x = nodes[, 1]  # x-coordinate vertex
-    	g$y = nodes[, 2]  # y-coordinate vertex
-    	g$n = as.vector(table(pts0))  # nr of edges
+    	V(g)$x = nodes[, 1]  # x-coordinate vertex
+    	V(g)$y = nodes[, 2]  # y-coordinate vertex
+    	V(g)$n = as.vector(table(pts0))  # nr of edges
     	# line lengths:
     	sl$length = SpatialLinesLengths(sl) # takes care of projected
     	if (!missing(weights)) {
