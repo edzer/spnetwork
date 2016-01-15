@@ -173,8 +173,6 @@ print.summary.SpatialNetwork = function(x, ...) {
 #' @rdname SpatialNetwork-methods
 setMethod("spTransform", signature("SpatialNetwork", "ANY"),
     function(x, CRSobj, ...) {
-        if (!requireNamespace("rgdal", quietly = TRUE))
-            stop("package rgdal is required for spTransform methods")
         new("SpatialNetwork",
 			spTransform(as(x, "SpatialLinesDataFrame"), CRSobj, ...), # calls the rgdal methods
 			g = x@g, weightfield = x@weightfield)
