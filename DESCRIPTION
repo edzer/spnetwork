@@ -1,16 +1,16 @@
 Package: spnetwork
 Title: Spatial Networks
 Description: Classes and methods for spatial networks.
-Version: 0.0-0
+Version: 0.0-1
 Date: 2016-01-05
-Authors@R: c(person("Edzer", "Pebesma", role = c("cre", "aut"), email = "edzer.pebesma@uni-muenster.de"))
+Authors@R: c(person("Edzer", "Pebesma", role = c("cre", "aut"), email = "edzer.pebesma@uni-muenster.de"),
+    person("Richard", "Ellison", role = c("aut")))
 Depends:
     methods
 Imports:
     sp (>= 1.0-17),
     igraph
 Suggests:
-    trajectories,
     knitr,
 	rgdal,
     deldir
