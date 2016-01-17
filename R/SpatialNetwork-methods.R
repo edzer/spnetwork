@@ -102,7 +102,10 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
 setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
 	# select i: edge_ids
 	sl = as(x, "SpatialLinesDataFrame")[i, j, ..., drop = FALSE]
+	if (is_directed(x@g))
+		i = which(E(x@g)$link_index %in% i)
 	g = subgraph.edges(x@g, i)
+	E(g)$link_index = match(i, unique(i)) # map to 1..length(sl)
 	new("SpatialNetwork", sl, g = g, weightfield = x@weightfield)
 })
 

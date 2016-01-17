@@ -119,3 +119,18 @@ As the edge weights are computed by Line lengths, this is the geographically sho
 ```{r}
 summary(sel)
 ```
+
+# City networks: Toronto, Ottawa
+```{r}
+data("torontocentre")
+tc = SpatialNetwork(torontocentre)
+plot(tc)
+points(tc)
+```
+
+```{r}
+data("ottawacentre")
+oc = SpatialNetwork(ottawacentre)
+plot(oc)
+points(oc)
+```
