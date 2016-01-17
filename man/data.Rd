@@ -22,9 +22,10 @@ data(torontocentre)
 \keyword{datasets}
 
 \examples{
+library(sp)
 data(ottawacentre)
 oc = SpatialNetwork(ottawacentre, directions = ottawacentre$DIRECTION_)
-plot(tc)
+plot(oc)
 points(oc)
 data(torontocentre)
 tc = SpatialNetwork(torontocentre, directions = torontocentre$DIRECTION_)
