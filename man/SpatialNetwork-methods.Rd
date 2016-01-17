@@ -10,14 +10,13 @@
 \alias{spTransform,SpatialNetwork,ANY-method}
 \alias{summary}
 \alias{summary,SpatialNetwork-method}
-\alias{summary.SpatialNetwork}
 \title{extract method for SpatialNetwork}
 \usage{
 \S4method{[}{SpatialNetwork}(x, i, j, ..., drop = TRUE)
 
 \method{points}{SpatialNetwork}(x, ..., col = "red", cex = 2)
 
-summary.SpatialNetwork(object, ...)
+\S4method{summary}{SpatialNetwork}(object, ...)
 
 \method{print}{summary.SpatialNetwork}(x, ...)
 
@@ -26,9 +25,9 @@ summary.SpatialNetwork(object, ...)
 \arguments{
 \item{x}{object of class SpatialNetwork}
 
-\item{i}{numeric; features to select}
+\item{i}{numeric; Lines to select (and any edges referring to them)}
 
-\item{j}{numeric or character; attributes to select}
+\item{j}{numeric; graph edges to select (and any Lines they refer to)}
 
 \item{...}{ignored}
 

@@ -7,10 +7,10 @@
 \alias{weights,SpatialNetwork-method}
 \alias{weights.SpatialNetwork}
 \alias{weights<-}
-\alias{weights<-,SpatialNetwork,ANY,character-method}
-\alias{weights<-,SpatialNetwork,ANY,vector-method}
 \alias{weights<-,SpatialNetwork,character,vector-method}
 \alias{weights<-,SpatialNetwork,character-method,}
+\alias{weights<-,SpatialNetwork,missing,character-method}
+\alias{weights<-,SpatialNetwork,missing,vector-method}
 \alias{weights<-,SpatialNetwork,vector-method,}
 \title{Get or set weight field in SpatialNetwork}
 \usage{
@@ -18,9 +18,9 @@ weights(object, ...)
 
 \method{weights}{SpatialNetwork}(object, ...)
 
-\S4method{weights}{SpatialNetwork,ANY,character}(x) <- value
+\S4method{weights}{SpatialNetwork,missing,character}(x) <- value
 
-\S4method{weights}{SpatialNetwork,ANY,vector}(x) <- value
+\S4method{weights}{SpatialNetwork,missing,vector}(x) <- value
 
 \S4method{weights}{SpatialNetwork,character,vector}(x, weightfield) <- value
 }

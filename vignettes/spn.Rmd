@@ -70,7 +70,7 @@ dd <- function(x, ..., to = "polygons") {
 We'll generate a set of 
 
 ```{r}
-n = 1000
+n = 300
 ```
 
 points in a unit square:
@@ -114,23 +114,50 @@ points(sel)
 text(V(net@g)$x[c(1, n)], V(net@g)$y[c(1, n)], c("begin", "end"), pos = 4)
 ```
 
-As the edge weights are computed by Line lengths, this is the geographically shortest path from start to end. 
+As the edge weights are computed by Line lengths, this is the
+geographically shortest path from start to end.
 
 ```{r}
 summary(sel)
 ```
 
 # City networks: Toronto, Ottawa
+
+Toronto: green are two-way streets, red the one-way streets
+
 ```{r}
 data("torontocentre")
-tc = SpatialNetwork(torontocentre)
-plot(tc)
+tc = SpatialNetwork(torontocentre, directions = torontocentre$DIRECTION_)
+plot(tc, col = ifelse(torontocentre$DIRECTION_ == 0, 'green', 'red'), axes = TRUE)
 points(tc)
 ```
 
+# Directed graph
+
+Shortest path, denoted by notes (vertices), between the two green
+points, blue circles is going North, red triangles going South.
+
 ```{r}
 data("ottawacentre")
-oc = SpatialNetwork(ottawacentre)
-plot(oc)
-points(oc)
+oc = SpatialNetwork(ottawacentre, directions = ottawacentre$DIRECTION_)
+plot(oc, col = ifelse(ottawacentre$DIRECTION_ == 0, 'green', 'red'))
+# find two distant points:
+m = rbind(
+c( -75.70246, 45.40728),
+c( -75.69669, 45.42286)
+)
+pts = SpatialPoints(m, CRS(proj4string(oc)))
+points(pts, col = 'green', pch = 16)
+# find nearest nodes:
+oc.p = as(oc, "SpatialPointsDataFrame")
+nearest = apply(spDists(pts, oc.p), 1, which.min)
+points(oc.p[nearest, ], col = 'blue', pch = 16)
+path = get.shortest.paths(oc@g, nearest[1], nearest[2], output = "both")
+sp = as.vector(path$vpath[[1]])
+ids = as_ids(path$epath[[1]])
+points(oc[,ids], col = 'blue', cex = .7, pch = 16)
+path = get.shortest.paths(oc@g, nearest[2], nearest[1], output = "both")
+# sp = as.vector(path$vpath[[1]])
+ids = as_ids(path$epath[[1]])
+points(oc[,ids], col = 'red', cex = 1, pch = 2)
 ```

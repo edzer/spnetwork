@@ -58,7 +58,7 @@ weights.SpatialNetwork = function(object, ...) {
 }
 
 #' @rdname weightfield
-setReplaceMethod("weights", signature(x = "SpatialNetwork", value = "character"), 
+setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", value = "character"), 
                  definition = function(x, value) {
                      if (value %in% names(x)) {
                          x@weightfield <- value
@@ -69,7 +69,7 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", value = "character")
                  })
 
 #' @rdname weightfield
-setReplaceMethod("weights", signature(x = "SpatialNetwork", value = "vector"),
+setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", value = "vector"),
                  definition = function(x, value) {
                      message("Using 'weight' as field name.")
                      x@data[,'weight'] <- value
@@ -94,18 +94,30 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
 #' @aliases [,SpatialNetwork-method
 #' @docType methods
 #' @param x object of class SpatialNetwork
-#' @param i numeric; features to select
-#' @param j numeric or character; attributes to select
+#' @param i numeric; Lines to select (and any edges referring to them)
+#' @param j numeric; graph edges to select (and any Lines they refer to)
 #' @param ... ignored
 #' @param drop logical; ignored
 #' @rdname SpatialNetwork-methods
 setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
-	# select i: edge_ids
-	sl = as(x, "SpatialLinesDataFrame")[i, j, ..., drop = FALSE]
-	if (is_directed(x@g))
-		i = which(E(x@g)$link_index %in% i)
-	g = subgraph.edges(x@g, i)
-	E(g)$link_index = match(i, unique(i)) # map to 1..length(sl)
+	if (!missing(i) && !missing(j))
+		stop("use obj[i,] for selecting lines, obj[,j] for selecing edges, not both")
+	# select i: Lines ids
+	if (!missing(i)) {
+		if (length(i) > length(x) || any(i < 1 | i > length(x)))
+			stop("index i out of range (1 ... # lines)")
+		sl = as(x, "SpatialLinesDataFrame")[i, j, ..., drop = FALSE]
+		if (is_directed(x@g))
+			i = which(E(x@g)$link_index %in% i)
+		g = subgraph.edges(x@g, i)
+		E(g)$link_index = match(i, unique(i)) # map to 1..length(sl)
+	} else if (!missing(j)) {
+		g = subgraph.edges(x@g, j)
+		sl = as(x, "SpatialLinesDataFrame")[unique(E(g)$link_index), ]
+	} else {
+		g = x@g
+		sl = x
+	}
 	new("SpatialNetwork", sl, g = g, weightfield = x@weightfield)
 })
 
@@ -121,13 +133,6 @@ if (!isGeneric("summary"))
 	setGeneric("summary", function(object, ...)
 		standardGeneric("summary"))
 
-#' summary method for SpatialNetwork
-#'
-#' @name summary
-#' @aliases summary,SpatialNetwork-method
-#' @docType methods
-#' @param object object of class SpatialNetwork
-#' @rdname SpatialNetwork-methods
 summary.SpatialNetwork = function(object, ...) {
     obj = list()
 	obj[["class"]] = class(object)
@@ -143,6 +148,14 @@ summary.SpatialNetwork = function(object, ...) {
     class(obj) = "summary.SpatialNetwork"
     obj
 }
+
+#' summary method for SpatialNetwork
+#'
+#' @name summary
+#' @aliases summary,SpatialNetwork-method
+#' @param object object of class SpatialNetwork
+#' @docType methods
+#' @rdname SpatialNetwork-methods
 setMethod("summary", "SpatialNetwork", summary.SpatialNetwork)
 
 #' @rdname SpatialNetwork-methods
@@ -180,4 +193,18 @@ setMethod("spTransform", signature("SpatialNetwork", "ANY"),
 			spTransform(as(x, "SpatialLinesDataFrame"), CRSobj, ...), # calls the rgdal methods
 			g = x@g, weightfield = x@weightfield)
     }
+)
+
+#' As("SpatialNetwork", "SpatialPointsDataFrame")
+#'
+#' @aliases coerce,SpatialNetwork,SpatialPointsDataFrame-method
+#' @name as
+#' @family SpatialNetwork
+setAs("SpatialNetwork", "SpatialPointsDataFrame",
+	function(from) {
+		x = V(from@g)$x
+		y = V(from@g)$y
+		SpatialPointsDataFrame(SpatialPoints(cbind(x,y), from@proj4string),
+			data.frame(vertex.attributes(from@g)))
+	}
 )
