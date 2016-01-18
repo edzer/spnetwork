@@ -1,5 +1,6 @@
 #' @import methods sp igraph
 #' @importFrom stats weights
+#' @importFrom graphics arrows points
 
 #  @exportClass igraph
 setClass("igraph") # S4
