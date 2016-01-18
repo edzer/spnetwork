@@ -12,8 +12,7 @@ Imports:
     igraph
 Suggests:
     knitr,
-    deldir,
-	rgdal
+    deldir
 License: GPL-2
 URL: http://github.com/edzer/spnetworks
 VignetteBuilder: knitr
