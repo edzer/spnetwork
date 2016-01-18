@@ -140,6 +140,8 @@ points, blue circles is going North, red triangles going South.
 ```{r}
 data("ottawacentre")
 oc = SpatialNetwork(ottawacentre, directions = ottawacentre$DIRECTION_)
+par(mfrow = c(1, 2))
+plot(oc, col = ifelse(ottawacentre$DIRECTION_ == 0, 'green', 'red'), arrow_size=.3)
 plot(oc, col = ifelse(ottawacentre$DIRECTION_ == 0, 'green', 'red'))
 # find two distant points:
 m = rbind(
@@ -147,7 +149,7 @@ c( -75.70246, 45.40728),
 c( -75.69669, 45.42286)
 )
 pts = SpatialPoints(m, CRS(proj4string(oc)))
-points(pts, col = 'green', pch = 16)
+points(pts, col = 'orange', pch = 16)
 # find nearest nodes:
 oc.p = as(oc, "SpatialPointsDataFrame")
 nearest = apply(spDists(pts, oc.p), 1, which.min)

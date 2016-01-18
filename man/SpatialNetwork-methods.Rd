@@ -4,6 +4,10 @@
 \name{[}
 \alias{[}
 \alias{[,SpatialNetwork-method}
+\alias{as}
+\alias{coerce,SpatialNetwork,SpatialPointsDataFrame-method}
+\alias{plot}
+\alias{plot,SpatialNetwork,missing-method}
 \alias{points.SpatialNetwork}
 \alias{print.summary.SpatialNetwork}
 \alias{spTransform}
@@ -21,6 +25,8 @@
 \method{print}{summary.SpatialNetwork}(x, ...)
 
 \S4method{spTransform}{SpatialNetwork,ANY}(x, CRSobj, ...)
+
+\S4method{plot}{SpatialNetwork,missing}(x, y, ..., arrow_size = 0)
 }
 \arguments{
 \item{x}{object of class SpatialNetwork}
@@ -40,6 +46,10 @@
 \item{object}{object of class SpatialNetwork}
 
 \item{CRSobj}{object of class \link[sp]{CRS}}
+
+\item{y}{ignored}
+
+\item{arrow_size}{numeric; scaling factor for the arrow head}
 }
 \description{
 extract method for SpatialNetwork
@@ -47,5 +57,9 @@ extract method for SpatialNetwork
 summary method for SpatialNetwork
 
 spTransform method for SpatialNetwork
+
+As("SpatialNetwork", "SpatialPointsDataFrame")
+
+plot method for SpatialNetwork
 }
 

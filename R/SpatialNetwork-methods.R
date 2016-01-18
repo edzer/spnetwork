@@ -200,6 +200,7 @@ setMethod("spTransform", signature("SpatialNetwork", "ANY"),
 #' @aliases coerce,SpatialNetwork,SpatialPointsDataFrame-method
 #' @name as
 #' @family SpatialNetwork
+#' @rdname SpatialNetwork-methods
 setAs("SpatialNetwork", "SpatialPointsDataFrame",
 	function(from) {
 		x = V(from@g)$x
@@ -208,3 +209,42 @@ setAs("SpatialNetwork", "SpatialPointsDataFrame",
 			data.frame(vertex.attributes(from@g)))
 	}
 )
+
+#' plot method for SpatialNetwork
+#'
+#' @name plot
+#' @aliases plot,SpatialNetwork,missing-method
+#' @docType methods
+#' @param y ignored
+#' @param arrow_size numeric; scaling factor for the arrow head
+#' @rdname SpatialNetwork-methods
+setMethod("plot", signature(x = "SpatialNetwork", y = "missing"),
+    function(x, y, ..., arrow_size = 0) {
+		plot(as(x, "SpatialLines"), ...)
+		if (arrow_size > 0)
+			plotSpatialArrows(x, ..., arrow_size = arrow_size, directions = x$directions)
+    }
+)
+
+## taken from sp:
+plotSpatialArrows <- function(SL, col = 1, lwd = 1, lty=1, 
+	lend = 0, ljoin = 0, lmitre = 10, ..., arrow_size, directions) {
+
+	n = length(SL@lines)
+	if (length(col) != n) col <- rep(col, n)
+	if (length(lwd) != n) lwd <- rep(lwd, n)
+	if (length(lty) != n) lty <- rep(lty, n)
+
+	for (i in seq(along = SL@lines)) { # up-link
+		if (directions[i] != 0) {
+			crds = SL@lines[[i]]@Lines[[1]]@coords
+			if (directions[i] == -1)
+				pt = crds[1:2,]
+			if (directions[i] == 1)  # down-link
+				pt = crds[nrow(crds):(nrow(crds)-1),]
+     		arrows(pt[2,1], pt[2,2], pt[1,1], pt[1,2], length = 0.25 * arrow_size, angle = 25,
+	             code = 2, col = col[i], lty = lty[i], lwd = lwd[i], ...)
+		}
+	}
+}
+
