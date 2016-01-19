@@ -2,8 +2,7 @@
 #' @importFrom stats weights
 #' @importFrom graphics arrows points
 
-#  @exportClass igraph
-setClass("igraph") # S4
+setOldClass("igraph") # needed, to use S3 class as S4 class slot
 
 #' The SpatialNetwork class and constructor function
 #'
