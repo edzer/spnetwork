@@ -254,7 +254,7 @@ plotSpatialArrows <- function(SL, col = 1, lwd = 1, lty=1,
 			if (direction[i] == 1)  # down-link
 				pt = crds[nrow(crds):(nrow(crds)-1),]
      		arrows(pt[2,1], pt[2,2], pt[1,1], pt[1,2], length = 0.25 * arrow_size, angle = 25,
-	             code = 2, col = col[i], lty = lty[i], lwd = lwd[i], ...)
+	             code = 2, col = col[i], lty = lty[i], lwd = lwd[i]) # ignore ...
 		}
 	}
 }
