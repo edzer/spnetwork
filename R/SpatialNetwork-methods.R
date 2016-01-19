@@ -37,10 +37,6 @@
 #' weights(sln, "randomweights") = runif(nrow(sln))
 NULL
 
-##' @export
-#setGeneric("weights",
-#           function(x) standardGeneric("weights"))
-
 #' @export
 setGeneric("weights<-",
            function(x, value) standardGeneric("weights<-"))
@@ -58,7 +54,8 @@ weights.SpatialNetwork = function(object, ...) {
 }
 
 #' @rdname weightfield
-setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", value = "character"), 
+setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", 
+	value = "character"), 
                  definition = function(x, value) {
                      if (value %in% names(x)) {
                          x@weightfield <- value
@@ -69,7 +66,8 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missi
                  })
 
 #' @rdname weightfield
-setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", value = "vector"),
+setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missing", 
+	value = "vector"),
                  definition = function(x, value) {
                      message("Using 'weight' as field name.")
                      x@data[,'weight'] <- value
@@ -79,7 +77,8 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "missi
                  })
 
 #' @rdname weightfield
-setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "character", value = "vector"),
+setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "character", 
+	value = "vector"),
                  definition = function(x, weightfield, value) {
                      x@data[,weightfield] <- value
                      x@weightfield <- weightfield
@@ -101,7 +100,7 @@ setReplaceMethod("weights", signature(x = "SpatialNetwork", weightfield = "chara
 #' @rdname SpatialNetwork-methods
 setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop = TRUE) {
 	if (!missing(i) && !missing(j))
-		stop("use obj[i,] for selecting lines, obj[,j] for selecing edges, not both")
+		stop("use obj[i,] for selecting lines, obj[,j] for selecing edges, but not both")
 	# select i: Lines ids
 	if (!missing(i)) {
 		if (length(i) > length(x) || any(i < 1 | i > length(x)))
@@ -114,10 +113,8 @@ setMethod("[", c("SpatialNetwork", "ANY", "ANY"), function(x, i, j, ... , drop =
 	} else if (!missing(j)) {
 		g = subgraph.edges(x@g, j)
 		sl = as(x, "SpatialLinesDataFrame")[unique(E(g)$link_index), ]
-	} else {
-		g = x@g
-		sl = x
-	}
+	} else
+		return(x)
 	new("SpatialNetwork", sl, g = g, weightfield = x@weightfield)
 })
 
@@ -210,6 +207,14 @@ setAs("SpatialNetwork", "SpatialPointsDataFrame",
 	}
 )
 
+#' As("SpatialNetwork", "igraph")
+#'
+#' @aliases coerce,SpatialNetwork,igraph-method
+#' @name as
+#' @family SpatialNetwork
+#' @rdname SpatialNetwork-methods
+setAs("SpatialNetwork", "igraph", function(from) from@g)
+
 #' plot method for SpatialNetwork
 #'
 #' @name plot
@@ -218,33 +223,38 @@ setAs("SpatialNetwork", "SpatialPointsDataFrame",
 #' @param y ignored
 #' @param arrow_size numeric; scaling factor for the arrow head
 #' @rdname SpatialNetwork-methods
+#' @examples
+#' data(torontocentre)
+#' tc = SpatialNetwork(torontocentre, direction = torontocentre$DIRECTION_)
+#' library(sp)
+#' plot(tc, arrow_size = .5)
+#' points(tc)
 setMethod("plot", signature(x = "SpatialNetwork", y = "missing"),
     function(x, y, ..., arrow_size = 0) {
 		plot(as(x, "SpatialLines"), ...)
 		if (arrow_size > 0)
-			plotSpatialArrows(x, ..., arrow_size = arrow_size, directions = x$directions)
+			plotSpatialArrows(x, ..., arrow_size = arrow_size, direction = x$direction)
     }
 )
 
-## taken from sp:
+## simplified from sp::plotSpatialLines
 plotSpatialArrows <- function(SL, col = 1, lwd = 1, lty=1, 
-	lend = 0, ljoin = 0, lmitre = 10, ..., arrow_size, directions) {
+	lend = 0, ljoin = 0, lmitre = 10, ..., arrow_size, direction) {
 
 	n = length(SL@lines)
 	if (length(col) != n) col <- rep(col, n)
 	if (length(lwd) != n) lwd <- rep(lwd, n)
 	if (length(lty) != n) lty <- rep(lty, n)
 
-	for (i in seq(along = SL@lines)) { # up-link
-		if (directions[i] != 0) {
+	for (i in seq(along = SL@lines)) { # grouping by link dir might speed this up.
+		if (direction[i] != 0) {
 			crds = SL@lines[[i]]@Lines[[1]]@coords
-			if (directions[i] == -1)
+			if (direction[i] == -1) # up-link
 				pt = crds[1:2,]
-			if (directions[i] == 1)  # down-link
+			if (direction[i] == 1)  # down-link
 				pt = crds[nrow(crds):(nrow(crds)-1),]
      		arrows(pt[2,1], pt[2,2], pt[1,1], pt[1,2], length = 0.25 * arrow_size, angle = 25,
 	             code = 2, col = col[i], lty = lty[i], lwd = lwd[i], ...)
 		}
 	}
 }
-

@@ -1,16 +1,31 @@
 <!--
 %\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{SpatialNetwork demo}
+%\VignetteIndexEntry{An introduction to the spnetwork package}
 \usepackage[utf8]{inputenc}
 -->
 
-# SpatialNetwork demo
+# An introduction to the `spnetwork` package
+
+The `spnetwork` R package provides a class and several methods for
+handling spatial networks, where the edges (links) in the network
+are represented by spatial lines and the nodes (vertices) by spatial
+points. The spatial information (lines, points) is represented by the
+`sp` package, the graph information (edges, vertices, direction)
+is taken care of by the `igraph` package.  Spatial networks can
+represent for instance road networks, or river networks.
+
+The `spnetwork` allows the creation of spatial networks, plotting,
+summarizing, subsetting, and conversion to lines, points, or graph
+data structures. Also, weights of network edges (e.g. the length
+of an edge, or the time it takes to pass it) can be set, retrieved,
+and modified.
+
+We will start with a little example that creates a toy network
+from scratch. It looks a bit awkward; in practice we will read edge
+data from external files, such as shapefiles. The following example
+creates a `SpatialLines` object, with a single `Line` per feature:
 
 ```{r}
-library(spnetwork)
-library(sp)
-library(igraph)
-
 l0 = cbind(c(1, 2), c(0, 0))
 l1 = cbind(c(0, 0, 0), c(0, 1, 2))
 l2 = cbind(c(0, 0, 0), c(2, 3, 4))
@@ -18,23 +33,94 @@ l3 = cbind(c(0, 1, 2), c(2, 2, 3))
 l4 = cbind(c(0, 1, 2), c(4, 4, 3))
 l5 = cbind(c(2, 2), c(0, 3))
 l6 = cbind(c(2, 3), c(3, 4))
-LL = function(l, ID) Lines(list(Line(l)), ID)
-l = list(LL(l0, "e"), LL(l1, "a"), LL(l2, "b"), LL(l3, "c"), LL(l4, "d"), LL(l5, "f"), LL(l6, "g"))
-sl = SpatialLines(l)
+library(sp)
+L1 = function(l) Lines(list(Line(l)), as.character(substitute(l)))
+sl = SpatialLines(list(L1(l0), L1(l1), L1(l2), L1(l3), L1(l4), L1(l5), L1(l6)))
+```
+
+The class `SpatialNetwork`, which looks like
+```{r}
+library(spnetwork)
+showClass("SpatialNetwork")
+```
+derives directly from `SpatialLinesDataFrame`, and contains a slot
+`g` of class `igraph`, and a slot `weightfield` that tracks which
+information is used to specify weights. The remaining slots,
+`lines`, `data`, `bbox` and `proj4string` are derived from
+`SpatialLinesDataFrame`.
+
+The function `SpatialNetwork` creates a spatial network from lines
+only:
+```{r}
 sln = SpatialNetwork(sl)
+summary(sln)
 ```
+When given a set of lines only, as done here, it needs to sort out
+which lines are connected by comparing all first and last points
+of each line, and forms connections (shared nodes/vertices) when
+they coincide.
 
+Optionally, `SpatialNetwork` can be given an igraph object (in which
+case it will not sort out the graph from the lines), information
+to override the default weights (line lengths), and (as explained
+below) also directions.
+
+We can take out the graph constructed by `sln@g`, and plot several
+of its properties:
 ```{r}
-plot(V(sln@g)$x, V(sln@g)$y, col = V(sln@g)$n, pch = 16, cex = 2, asp = 1)
+library(igraph)
+g = sln@g
+plot(V(g)$x, V(g)$y, col = V(g)$n, pch = 16, cex = 2, asp = 1)
 lines(sl)
-text(V(sln@g)$x, V(sln@g)$y, E(sln@g), pos = 4)
+text(V(g)$x, V(g)$y, as.character(1:length(V(g))), pos = 4)
 ```
+where node color indicates the number of edges it is shared by.
 
+Here, `V(g)$x` is the `x` attribute of the graph vertices (`V`); similarly,
 ```{r}
-plot(sln@g)
+E(g)$weight
+```
+retrieves graph edge attributes.
+
+We can let `igraph` plot this graph, as in
+```{r}
+plot(g)
 ```
 
-# A larger example: shortest path through a Delauny triangulations network
+and see that x and y attributes are used for the layout, but axes
+are rescaled and edges are replaced by straight lines.
+
+# Directed graphs
+
+In the example above, we can create a directed network by specifying
+the link directions, with 0 indicating two-way, 1 indicating one-way
+down-link (i.e. in the direction of the sequence of coordinates of a
+line), and -1 indicating one-way up-link:
+```{r}
+sln = SpatialNetwork(sl, direction = c(0,0,1,1,-1,-1,-1))
+summary(sln)
+```
+we now see that the number of graph edges (9) exceeds the number
+of line segments (7), by a number equal to the number of two-way
+streets (2). Each graph edge has an index indicating which lines (links)
+correspond to it:
+```{r}
+g = sln@g
+E(g)$link_index
+```
+
+The `igraph` plot of this graph now indicates edges direction:
+```{r}
+plot(g)
+```
+
+and also the `spnetwork` plot method can add arrows to links that
+have only one direction:
+```{r}
+plot(sln, arrow_size = 1)
+```
+
+# A larger example: shortest path, network subset
 
 We'll use Delauny triangulation from package deldir:
 ```{r}
@@ -51,18 +137,12 @@ dd <- function(x, ..., to = "polygons") {
     dd = deldir(list(x = cc[, 1], y = cc[, 2]), ...)
     if (to == "polygons") {
         tm = triMat(dd)
-        fn = function(ix) {
-            pts = tm[ix, ]
-            pts = c(pts, pts[1])
-            Polygons(list(Polygon(rbind(cc[pts, ]))), ix)
-        }
+        fn = function(i) Polygons(list(Polygon(rbind(cc[tm[c(i, i[1]),], ]))), i)
         SpatialPolygons(lapply(1:nrow(tm), fn), proj4string = x@proj4string)
     } else if (to == "lines") {
         segs = dd$delsgs
-        lst = vector("list", nrow(segs))
-        for (i in 1:nrow(segs)) lst[i] = Lines(list(Line(cc[c(segs[i, 5], segs[i, 
-            6]), ])), i)
-        SpatialLines(lst, proj4string = x@proj4string)
+        fn = function(i) Lines(list(Line(cc[c(segs[i, 5], segs[i, 6]), ])), i)
+        SpatialLines(lapply(1:nrow(segs), fn), proj4string = x@proj4string)
     } else stop("argument to should be polygons or lines")
 }
 ```
@@ -77,9 +157,7 @@ points in a unit square:
 
 ```{r}
 set.seed(5432)
-x = sort(runif(n))
-y = runif(n)
-pts = SpatialPoints(cbind(x, y))
+pts = SpatialPoints(cbind(x = sort(runif(n)), y = runif(n)))
 sl = dd(pts, to = "lines")
 ```
 
@@ -114,32 +192,42 @@ points(sel)
 text(V(net@g)$x[c(1, n)], V(net@g)$y[c(1, n)], c("begin", "end"), pos = 4)
 ```
 
-As the edge weights are computed by Line lengths, this is the
-geographically shortest path from start to end.
+Note that `net[ids,]` subsets the `SpatialNetwork` object, including
+the graph structure:  
 
 ```{r}
 summary(sel)
 ```
 
-# City networks: Toronto, Ottawa
+As the edge weights are computed by Line
+lengths, this is the geographically shortest path from start to end.
 
-Toronto: green are two-way streets, red the one-way streets
+# Real networks: Toronto, Ottawa
+
+Package `spnetwork` comes with two toy data sets: `torontocentre` and
+`ottawacentre`.  In the following plot, the Toronto city centre is
+plotted using green for two-way streets, and red for one-way streets,
+and arrows indicating one-way road direction.
 
 ```{r}
 data("torontocentre")
-tc = SpatialNetwork(torontocentre, directions = torontocentre$DIRECTION_)
-plot(tc, col = ifelse(torontocentre$DIRECTION_ == 0, 'green', 'red'), axes = TRUE)
-points(tc)
+tc = SpatialNetwork(torontocentre, direction = torontocentre$DIRECTION_)
+plot(tc, col = ifelse(torontocentre$DIRECTION_ == 0, 'green', 'red'), 
+	arrow_size = .3, axes = TRUE)
 ```
 
-# Directed graph
+# Shortest path through directed graphs
 
-Shortest path, denoted by notes (vertices), between the two green
-points, blue circles is going North, red triangles going South.
+The following example first finds the shortest path between two
+arbitrary points (orange) and the corresponding nearest points
+formed by the graph nodes (blue). From these two blue points,
+shortest paths are found and plotted by nodes going north (blue
+circles) and going south (red triangles). Clearly, this leads to
+two different routes in a directed network.
 
 ```{r}
 data("ottawacentre")
-oc = SpatialNetwork(ottawacentre, directions = ottawacentre$DIRECTION_)
+oc = SpatialNetwork(ottawacentre, direction = ottawacentre$DIRECTION_)
 par(mfrow = c(1, 2))
 plot(oc, col = ifelse(ottawacentre$DIRECTION_ == 0, 'green', 'red'), arrow_size=.3)
 plot(oc, col = ifelse(ottawacentre$DIRECTION_ == 0, 'green', 'red'))

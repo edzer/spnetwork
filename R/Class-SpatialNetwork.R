@@ -21,12 +21,12 @@ setClass("igraph") # S4
 #'    \item{\code{weightfield}}{character; describing the weight field used}
 #'  }
 #'
-#' @usage SpatialNetwork(sl, g, weights, weightfield, directions, zero)
+#' @usage SpatialNetwork(sl, g, weight, weightfield, direction, zero)
 #' @param sl object of one of (a sublasses of) \link{SpatialLines}, with links
 #' @param g object of class \link{igraph}; if missing, the graph is sorted out from the links
-#' @param weights weight for links (defaults to length of linestring)
+#' @param weight weight for links (defaults to length of linestring)
 #' @param weightfield character; name of the attribute field of \code{sl} that will be used as weights
-#' @param directions numeric; if omitted, undirected graph, else integer vector indicating direction of a link: -1 for up-link, 0 for two-way, or 1 for down-link
+#' @param direction numeric; if omitted, undirected graph, else integer vector indicating direction of a link: -1 for up-link, 0 for two-way, or 1 for down-link
 #' @param zero numeric; zero threshold passed on to \link[sp]{zerodist}
 #' @return object of class \link{SpatialNetwork-class}
 
@@ -78,7 +78,7 @@ setClass("SpatialNetwork",
 )
 
 #' @export
-SpatialNetwork = function(sl, g, weights, weightfield, directions, zero = 0.0) {
+SpatialNetwork = function(sl, g, weight, weightfield, direction, zero = 0.0) {
     stopifnot(is(sl, "SpatialLines"))
     if (!is(sl, "SpatialLinesDataFrame")) 
         sl = new("SpatialLinesDataFrame", sl, data = data.frame(id = 1:length(sl)))
@@ -105,19 +105,19 @@ SpatialNetwork = function(sl, g, weights, weightfield, directions, zero = 0.0) {
     	# map to 1:length(unique(pts)), e.g. 1-2 3-1 2-4
     	pts0 = match(pts, unique(pts))
 		link_index = 1:length(sl)
-		if (! missing(directions)) { # -1: upstream, 0: two-way, 1: down-stream
-			stopifnot(length(directions) == length(sl))
-			stopifnot(all(directions %in% c(-1,0,1)))
-			sl$directions = directions
-			downlink = directions != -1 # 1..length(directions)
+		if (! missing(direction)) { # -1: upstream, 0: two-way, 1: down-stream
+			stopifnot(length(direction) == length(sl))
+			stopifnot(all(direction %in% c(-1,0,1)))
+			sl$direction = direction
+			downlink = direction != -1 # 1..length(direction)
 			e = matrix(pts0, ncol = 2, byrow = TRUE) # each row is an edge/link
 			# handle -1: reversed edges for one-way, up-link
-			rev = which(directions == -1)
+			rev = which(direction == -1)
 			to = e[rev,2]
 			e[rev,2] = e[rev,1]
 			e[rev,1] = to
 			# 0: add reverse direction edges
-			two_way = which(directions == 0)
+			two_way = which(direction == 0)
 			if (length(two_way) > 0) {
 				e = rbind(e, e[two_way, c(2,1)]) # add up-links
 				downlink = c(downlink, rep(FALSE, length(two_way)))
@@ -135,7 +135,7 @@ SpatialNetwork = function(sl, g, weights, weightfield, directions, zero = 0.0) {
     	V(g)$y = nodes[, 2]  # y-coordinate vertex
     	V(g)$n = as.vector(table(pts0))  # nr of edges
     	# line lengths:
-    	if (missing(weights) && missing(weightfield)) {
+    	if (missing(weight) && missing(weightfield)) {
     		sl$length = SpatialLinesLengths(sl) # takes care of projected/geographical
     	    weightfield = 'length'
 		}
@@ -145,13 +145,13 @@ SpatialNetwork = function(sl, g, weights, weightfield, directions, zero = 0.0) {
     	sl$start = pts2[, 1]
     	sl$end = pts2[, 2]
 	}
-	if (! missing(weights)) {
-		stopifnot(length(weights) == length(sl))
+	if (! missing(weight)) {
+		stopifnot(length(weight) == length(sl))
 	    if (missing(weightfield))
 	        weightfield = 'weight'
-        sl@data[, weightfield] <- weights
+        sl@data[, weightfield] <- weight
 	} else
-        weights = sl@data[, weightfield]
-    E(g)$weight = weights[E(g)$link_index]
+        weight = sl@data[, weightfield]
+    E(g)$weight = weight[E(g)$link_index]
     new("SpatialNetwork", sl, g = g, weightfield = weightfield)
 }

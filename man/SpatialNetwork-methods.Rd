@@ -6,6 +6,7 @@
 \alias{[,SpatialNetwork-method}
 \alias{as}
 \alias{coerce,SpatialNetwork,SpatialPointsDataFrame-method}
+\alias{coerce,SpatialNetwork,igraph-method}
 \alias{plot}
 \alias{plot,SpatialNetwork,missing-method}
 \alias{points.SpatialNetwork}
@@ -60,6 +61,15 @@ spTransform method for SpatialNetwork
 
 As("SpatialNetwork", "SpatialPointsDataFrame")
 
+As("SpatialNetwork", "igraph")
+
 plot method for SpatialNetwork
+}
+\examples{
+data(torontocentre)
+tc = SpatialNetwork(torontocentre, direction = torontocentre$DIRECTION_)
+library(sp)
+plot(tc, arrow_size = .5)
+points(tc)
 }
 

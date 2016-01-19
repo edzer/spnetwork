@@ -9,18 +9,18 @@
 \alias{[[<-,SpatialNetwork,ANY,missing-method}
 \title{The SpatialNetwork class and constructor function}
 \usage{
-SpatialNetwork(sl, g, weights, weightfield, directions, zero)
+SpatialNetwork(sl, g, weight, weightfield, direction, zero)
 }
 \arguments{
 \item{sl}{object of one of (a sublasses of) \link{SpatialLines}, with links}
 
 \item{g}{object of class \link{igraph}; if missing, the graph is sorted out from the links}
 
-\item{weights}{weight for links (defaults to length of linestring)}
+\item{weight}{weight for links (defaults to length of linestring)}
 
 \item{weightfield}{character; name of the attribute field of \code{sl} that will be used as weights}
 
-\item{directions}{numeric; if omitted, undirected graph, else integer vector indicating direction of a link: -1 for up-link, 0 for two-way, or 1 for down-link}
+\item{direction}{numeric; if omitted, undirected graph, else integer vector indicating direction of a link: -1 for up-link, 0 for two-way, or 1 for down-link}
 
 \item{zero}{numeric; zero threshold passed on to \link[sp]{zerodist}}
 }
